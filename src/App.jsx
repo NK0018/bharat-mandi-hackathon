@@ -32,6 +32,8 @@ const [vehicles, setVehicles] = useState([
     available: 20,
     freight: 800,
     status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Gulabbagh',
   },
   {
     id: 2,
@@ -41,6 +43,8 @@ const [vehicles, setVehicles] = useState([
     available: 30,
     freight: 1000,
     status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Araria',
   },
   {
     id: 3,
@@ -50,10 +54,31 @@ const [vehicles, setVehicles] = useState([
     available: 35,
     freight: 1200,
     status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Katihar',
   },
 ])
 
 const [requestedVehicle, setRequestedVehicle] = useState(null)
+const matchedVehicles = vehicles.filter(
+  (vehicle) => {
+    const routeMatches =
+      vehicle.pickup === pickup &&
+      vehicle.destination === destination
+
+    const quantityMatches =
+      vehicle.available >= Number(loadQuantity)
+
+    const cropMatches =
+      !vehicle.crop || vehicle.crop === loadCrop
+
+    return (
+      routeMatches &&
+      quantityMatches &&
+      cropMatches
+    )
+  }
+)
 
   const mandiData = [
     {
@@ -163,7 +188,6 @@ const postLoad = () => {
 
   alert('Your load successfully post ho gaya!')
 
-  setLoadQuantity(20)
 }
 
   return (
@@ -662,20 +686,29 @@ const postLoad = () => {
       </div>
 
       <span className="vehicle-count">
-        {vehicles.length} Vehicles
+        {matchedVehicles.length}{' '}
+        {matchedVehicles.length === 1 ? 'Vehicle' : 'Vehicles'} Found
       </span>
 
     </div>
 
 
     <div className="vehicle-grid">
+  {matchedVehicles.length === 0 ? (
+    <div className="no-vehicle-message">
+      <div className="no-vehicle-icon">🚫</div>
+      <h3>No Matching Vehicle Found</h3>
+      <p>
+        Is route aur quantity ke liye abhi koi suitable shared vehicle available nahi hai.
+      </p>
+    </div>
+  ) : (
+    matchedVehicles.map((vehicle) => (
 
-      {vehicles.map((vehicle) => (
-
-        <div
-          className="vehicle-card"
-          key={vehicle.id}
-        >
+      <div
+        className="vehicle-card"
+        key={vehicle.id}
+      >
 
           <div className="vehicle-card-top">
 
@@ -749,7 +782,8 @@ const postLoad = () => {
 
         </div>
 
-      ))}
+      ))
+    )}
 
     </div>
 

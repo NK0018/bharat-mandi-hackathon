@@ -506,11 +506,11 @@ body {
 .load-form input {
   width: 100%;
   padding: 14px;
+  color: #1f2937;
+  background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 15px;
-  outline: none;
-  background: white;
+  border-radius: 12px;
+  font-size: 16px;
 }
 
 .load-form select:focus,
@@ -689,4 +689,16 @@ body {
   .vehicle-details {
     grid-template-columns: 1fr;
   }
+}
+/* Form text visibility fix */
+input,
+select,
+textarea {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+select option {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
 }
