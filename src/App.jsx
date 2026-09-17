@@ -62,6 +62,9 @@ const [vehicles, setVehicles] = useState([
 const [requestedVehicle, setRequestedVehicle] = useState(null)
 const [joinedVehicle, setJoinedVehicle] = useState(null)
 const [sharedFreight, setSharedFreight] = useState(null)
+const [dashboardQuantity, setDashboardQuantity] = useState(100)
+const [dashboardFreight, setDashboardFreight] = useState(500)
+const [dashboardCrop, setDashboardCrop] = useState('Wheat')
 
 const matchedVehicles = vehicles.filter(
   (vehicle) => {
@@ -240,7 +243,87 @@ const requestToJoin = (vehicle) => {
     `Request sent! Estimated shared freight: ₹${freightShare}`
   )
 }
+// =========================================
+// Mandi Decision Dashboard
+// =========================================
 
+const dashboardMandis = mandiData.filter(
+  (mandi) => mandi.crop === dashboardCrop
+)
+
+const dashboardResults = dashboardMandis.map((mandi) => {
+  const quantity = Number(dashboardQuantity)
+  const baseFreight = Number(dashboardFreight)
+
+  // Nearby mandi ke liye simple estimated freight
+  const estimatedFreight =
+    mandi.name === 'Gulabbagh Mandi'
+      ? baseFreight + 200
+      : mandi.name === 'Araria Mandi'
+        ? baseFreight + 100
+        : baseFreight
+
+  const grossSale =
+    mandi.modal * quantity
+
+  const netEarning =
+    grossSale - estimatedFreight
+
+  return {
+    ...mandi,
+    quantity,
+    estimatedFreight,
+    grossSale,
+    netEarning,
+  }
+})
+
+const highestNetEarning =
+  dashboardResults.length > 0
+    ? Math.max(
+        ...dashboardResults.map(
+          (mandi) => mandi.netEarning
+        )
+      )
+    : 0
+// =========================================
+// SMART MANDI RECOMMENDATION
+// =========================================
+
+const recommendedMandi =
+  dashboardResults.length > 0
+    ? dashboardResults.reduce(
+        (bestMandi, currentMandi) =>
+          currentMandi.netEarning > bestMandi.netEarning
+            ? currentMandi
+            : bestMandi
+      )
+    : null
+
+const recommendationMessage = recommendedMandi
+  ? `Aapke ${dashboardQuantity} Q ${dashboardCrop} ke liye ${recommendedMandi.name} me estimated net earning ₹${recommendedMandi.netEarning.toLocaleString('en-IN')} hai.`
+  : 'Abhi recommendation ke liye mandi data available nahi hai.'
+  // =========================================
+// SMART TRANSPORT MATCHING
+// =========================================
+
+const recommendedRoute =
+  recommendedMandi?.name === 'Gulabbagh Mandi'
+    ? 'Gulabbagh'
+    : recommendedMandi?.name === 'Araria Mandi'
+      ? 'Araria'
+      : recommendedMandi?.name === 'Purnia Mandi'
+        ? 'Purnia'
+        : null
+
+const smartTransportMatches = recommendedRoute
+  ? vehicles.filter((vehicle) => {
+      return (
+        vehicle.destination === recommendedRoute &&
+        vehicle.available >= Number(dashboardQuantity)
+      )
+    })
+  : []
 return (
   <div className="app">
       {/* Navbar */}
@@ -573,6 +656,244 @@ return (
   </div>
 )}
 {/* =========================================
+    MANDI DECISION DASHBOARD
+    ========================================= */}
+
+<section className="decision-section">
+
+  <div className="decision-heading">
+    <p className="tagline">
+      💰 MANDI DECISION DASHBOARD
+    </p>
+
+    <h1>
+      Price Nahi,
+      <br />
+      <span>Net Earning</span> Compare Karo
+    </h1>
+
+    <p>
+      Mandi price, quantity aur estimated freight ke
+      basis par apni expected earning compare karein.
+    </p>
+  </div>
+
+
+  {/* Dashboard Controls */}
+
+  <div className="decision-controls">
+
+    <div className="input-group">
+      <label>🌾 Crop</label>
+
+      <select
+        value={dashboardCrop}
+        onChange={(e) =>
+          setDashboardCrop(e.target.value)
+        }
+      >
+        <option>Wheat</option>
+        <option>Rice</option>
+        <option>Maize</option>
+        <option>Potato</option>
+      </select>
+    </div>
+
+
+    <div className="input-group">
+      <label>📦 Quantity (Quintal)</label>
+
+      <input
+        type="number"
+        min="1"
+        value={dashboardQuantity}
+        onChange={(e) =>
+          setDashboardQuantity(e.target.value)
+        }
+      />
+    </div>
+
+
+    <div className="input-group">
+      <label>🚚 Base Freight (₹)</label>
+
+      <input
+        type="number"
+        min="0"
+        value={dashboardFreight}
+        onChange={(e) =>
+          setDashboardFreight(e.target.value)
+        }
+      />
+    </div>
+
+  </div>
+
+
+  {/* Mandi Comparison Cards */}
+
+ <div className="decision-grid">
+
+  {dashboardResults.map((mandi) => {
+
+    const isHighest =
+      mandi.netEarning === highestNetEarning
+
+    return (
+      <div
+        className={`decision-card ${
+          isHighest ? 'best-net-card' : ''
+        }`}
+        key={`${mandi.name}-${mandi.crop}`}
+      >
+
+        {isHighest && (
+          <div className="best-badge">
+            ⭐ Highest Net Earning
+          </div>
+        )}
+
+        <div className="decision-card-header">
+
+          <div>
+            <h2>{mandi.name}</h2>
+
+            <p>
+              📍 {mandi.location}
+            </p>
+          </div>
+
+          <span className="crop-badge">
+            🌾 {mandi.crop}
+          </span>
+
+        </div>
+
+        <div className="decision-price">
+
+          <small>Modal Mandi Price</small>
+
+          <strong>
+            ₹{mandi.modal}
+            <span>/Q</span>
+          </strong>
+
+        </div>
+
+        <div className="decision-breakdown">
+
+          <div>
+            <small>Quantity</small>
+            <strong>
+              {mandi.quantity} Q
+            </strong>
+          </div>
+
+          <div>
+            <small>Gross Sale</small>
+            <strong>
+              ₹{mandi.grossSale.toLocaleString('en-IN')}
+            </strong>
+          </div>
+
+          <div>
+            <small>Estimated Freight</small>
+            <strong>
+              ₹{mandi.estimatedFreight}
+            </strong>
+          </div>
+
+        </div>
+
+        <div className="net-earning-box">
+
+          <small>Expected Net Earning</small>
+
+          <strong>
+            ₹{mandi.netEarning.toLocaleString('en-IN')}
+          </strong>
+
+        </div>
+
+      </div>
+    )
+  })}
+
+</div>
+
+
+{/* =========================================
+    SMART MANDI RECOMMENDATION
+    ========================================= */}
+
+{recommendedMandi && (
+
+  <div className="smart-recommendation">
+
+    <div className="recommendation-icon">
+      🧠
+    </div>
+
+    <div className="recommendation-content">
+
+      <p className="tagline">
+        SMART RECOMMENDATION
+      </p>
+
+      <h2>
+        Suggested Mandi: {recommendedMandi.name}
+      </h2>
+
+      <p className="recommendation-message">
+        {recommendationMessage}
+      </p>
+
+      <div className="recommendation-stats">
+
+        <div>
+          <small>Crop</small>
+          <strong>
+            🌾 {recommendedMandi.crop}
+          </strong>
+        </div>
+
+        <div>
+          <small>Modal Price</small>
+          <strong>
+            ₹{recommendedMandi.modal}/Q
+          </strong>
+        </div>
+
+        <div>
+          <small>Estimated Freight</small>
+          <strong>
+            ₹{recommendedMandi.estimatedFreight}
+          </strong>
+        </div>
+
+        <div>
+          <small>Expected Net Earning</small>
+          <strong>
+            ₹{recommendedMandi.netEarning.toLocaleString('en-IN')}
+          </strong>
+        </div>
+
+      </div>
+
+      <p className="recommendation-note">
+        💡 Recommendation mandi price, quantity aur estimated
+        freight ke calculated values par based hai.
+      </p>
+
+    </div>
+
+  </div>
+
+)}
+
+
+</section>
+{/* =========================================
     SAJHA GADI
 ========================================= */}
 
@@ -884,7 +1205,164 @@ return (
         </div>
       </div>
     )}
+{/* =========================================
+    SMART TRANSPORT MATCH
+    ========================================= */}
 
+{recommendedMandi && (
+  <div className="smart-transport">
+
+    <div className="smart-transport-header">
+
+      <div>
+        <p className="tagline">
+          🚚 SMART TRANSPORT MATCH
+        </p>
+
+        <h2>
+          Shared Transport for {recommendedMandi.name}
+        </h2>
+
+        <p>
+          Recommended mandi ke route par available
+          shared vehicles check karein.
+        </p>
+      </div>
+
+      <span className="transport-route-badge">
+        📍 Purnia → {recommendedRoute}
+      </span>
+
+    </div>
+
+
+    {smartTransportMatches.length === 0 ? (
+
+      <div className="no-smart-transport">
+        <div className="no-smart-transport-icon">
+          🚫
+        </div>
+
+        <div>
+          <h3>
+            No Suitable Shared Vehicle Found
+          </h3>
+
+          <p>
+            Is mandi ke liye abhi required quantity ke
+            according suitable shared vehicle available nahi hai.
+          </p>
+        </div>
+      </div>
+
+    ) : (
+
+      <div className="smart-transport-grid">
+
+        {smartTransportMatches.map((vehicle) => (
+
+          <div
+            className="smart-transport-card"
+            key={vehicle.id}
+          >
+
+            <div className="smart-transport-card-top">
+
+              <div className="transport-icon">
+                🚚
+              </div>
+
+              <span className="available-badge">
+                ● Available
+              </span>
+
+            </div>
+
+
+            <h3>
+              {vehicle.driver}
+            </h3>
+
+            <p className="vehicle-route">
+              📍 {vehicle.route}
+            </p>
+
+
+            <div className="smart-transport-details">
+
+              <div>
+                <small>
+                  Your Quantity
+                </small>
+
+                <strong>
+                  {dashboardQuantity} Q
+                </strong>
+              </div>
+
+
+              <div>
+                <small>
+                  Available Space
+                </small>
+
+                <strong>
+                  {vehicle.available} Q
+                </strong>
+              </div>
+
+
+              <div>
+                <small>
+                  Vehicle Freight
+                </small>
+
+                <strong>
+                  ₹{vehicle.freight}
+                </strong>
+              </div>
+
+            </div>
+
+
+            <div className="smart-transport-match">
+
+              <span>
+                ✓ Route Match
+              </span>
+
+              <span>
+                ✓ Capacity Match
+              </span>
+
+            </div>
+
+
+            <button
+              className="smart-join-btn"
+              onClick={() => {
+                setPickup(vehicle.pickup)
+                setDestination(vehicle.destination)
+                setLoadQuantity(dashboardQuantity)
+
+                alert(
+                  `Vehicle selected! Sajha Gadi me ${vehicle.route} ke liye details set ho gayi hain.`
+                )
+              }}
+            >
+              🤝 Use This Vehicle
+            </button>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    )}
+
+  </div>
+)}
 
 </section>
 
