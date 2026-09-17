@@ -10,6 +10,9 @@ function App() {
   const [searchCrop, setSearchCrop] = useState('Wheat')
   const [searchState, setSearchState] = useState('Bihar')
   const [searchDistrict, setSearchDistrict] = useState('Purnia')
+  const [quantity, setQuantity] = useState(100)
+  const [freight, setFreight] = useState(500)
+  const [profit, setProfit] = useState(null)
 
   const mandiData = [
     {
@@ -68,6 +71,25 @@ const lowestPrice = Math.min(
 )
 
 const priceDifference = highestPrice - lowestPrice
+
+const calculateProfit = () => {
+  if (!selectedMandi) {
+    alert('Pehle ek mandi select karein.')
+    return
+  }
+
+  const totalSaleValue =
+    selectedMandi.modal * Number(quantity)
+
+  const netProfit =
+    totalSaleValue - Number(freight)
+
+  setProfit({
+    saleValue: totalSaleValue,
+    freightCost: Number(freight),
+    netProfit: netProfit,
+  })
+}
 
   return (
     <div className="app">
@@ -190,7 +212,12 @@ const priceDifference = highestPrice - lowestPrice
             )}
 
           {filteredMandiData.map((mandi) => (
-            <div className="mandi-card" key={mandi.name}>
+           <div
+              className={`mandi-card ${
+                selectedMandi?.name === mandi.name ? 'selected' : ''
+              }`}
+              key={`${mandi.name}-${mandi.crop}`}
+            >
 
               <div className="mandi-card-header">
                 <div>
@@ -240,6 +267,162 @@ const priceDifference = highestPrice - lowestPrice
           ))}
 
         </div>
+
+        {/* Profit Calculator */}
+{selectedMandi && (
+  <div className="profit-section">
+
+    {/* Selected Mandi */}
+    <div className="selected-mandi">
+
+      <div>
+        <span className="section-label">
+          SELECTED MANDI
+        </span>
+
+        <h3>
+          📍 {selectedMandi.name}
+        </h3>
+
+        <p>
+          {selectedMandi.location}
+        </p>
+      </div>
+
+      <div className="selected-price">
+        <small>Modal Price</small>
+
+        <strong>
+          ₹{selectedMandi.modal}
+        </strong>
+
+        <span>
+          per quintal
+        </span>
+      </div>
+
+    </div>
+
+
+    {/* Calculator */}
+    <div className="profit-calculator">
+
+      <div className="calculator-heading">
+
+        <span>💰</span>
+
+        <div>
+          <h2>
+            Net Profit Estimator
+          </h2>
+
+          <p>
+            Apni quantity aur transport cost enter karke
+            estimated earning calculate karein.
+          </p>
+        </div>
+
+      </div>
+
+
+      {/* Inputs */}
+      <div className="calculator-inputs">
+
+        <div className="input-group">
+
+          <label>
+            🌾 Quantity (Quintal)
+          </label>
+
+          <input
+            type="number"
+            min="1"
+            value={quantity}
+            onChange={(e) =>
+              setQuantity(e.target.value)
+            }
+          />
+
+        </div>
+
+
+        <div className="input-group">
+
+          <label>
+            🚚 Freight Cost (₹)
+          </label>
+
+          <input
+            type="number"
+            min="0"
+            value={freight}
+            onChange={(e) =>
+              setFreight(e.target.value)
+            }
+          />
+
+        </div>
+
+
+        <button
+          className="calculate-btn"
+          onClick={calculateProfit}
+        >
+          💰 Calculate Profit
+        </button>
+
+      </div>
+
+
+      {/* Result */}
+      {profit && (
+        <div className="profit-result">
+
+          <div className="result-box">
+
+            <span>
+              Total Sale Value
+            </span>
+
+            <strong>
+              ₹{profit.saleValue}
+            </strong>
+
+          </div>
+
+
+          <div className="result-box">
+
+            <span>
+              Transport Cost
+            </span>
+
+            <strong>
+              ₹{profit.freightCost}
+            </strong>
+
+          </div>
+
+
+          <div className="result-box highlight">
+
+            <span>
+              Estimated Net Profit
+            </span>
+
+            <strong>
+              ₹{profit.netProfit}
+            </strong>
+
+          </div>
+
+        </div>
+      )}
+
+    </div>
+
+  </div>
+)}
 
       </main>
 
