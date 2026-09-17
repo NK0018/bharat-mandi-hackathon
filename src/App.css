@@ -429,3 +429,264 @@ body {
     width: 100%;
   }
 }
+/* =========================================
+   SAJHA GADI
+========================================= */
+
+.sajha-section {
+  margin-top: 70px;
+  padding-bottom: 60px;
+}
+
+.sajha-heading {
+  margin-bottom: 25px;
+}
+
+.sajha-heading h1 {
+  margin: 8px 0;
+  color: #14532d;
+  font-size: 38px;
+  line-height: 1.15;
+}
+
+.sajha-heading h1 span {
+  color: #16a34a;
+}
+
+.sajha-heading p {
+  color: #64748b;
+}
+
+
+/* LOAD POST */
+
+.load-post-card {
+  padding: 30px;
+  background: white;
+  border: 1px solid #dcfce7;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.load-post-heading {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.load-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: #dcfce7;
+  border-radius: 14px;
+  font-size: 25px;
+}
+
+.load-post-heading h2 {
+  margin: 0;
+  color: #14532d;
+}
+
+.load-post-heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+}
+
+.load-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.load-form select,
+.load-form input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: white;
+}
+
+.load-form select:focus,
+.load-form input:focus {
+  border-color: #16a34a;
+}
+
+.post-load-btn {
+  margin-top: 20px;
+  padding: 14px 25px;
+  border: none;
+  border-radius: 10px;
+  background: #15803d;
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.post-load-btn:hover {
+  background: #166534;
+}
+
+
+/* VEHICLES */
+
+.vehicle-area {
+  margin-top: 45px;
+}
+
+.vehicle-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.vehicle-heading h2 {
+  margin: 5px 0 0;
+  color: #14532d;
+  font-size: 28px;
+}
+
+.vehicle-count {
+  padding: 8px 14px;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.vehicle-card {
+  padding: 23px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
+  transition: 0.2s;
+}
+
+.vehicle-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.09);
+}
+
+.vehicle-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vehicle-icon {
+  font-size: 30px;
+}
+
+.available-badge {
+  padding: 6px 10px;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.vehicle-card h3 {
+  margin: 15px 0 5px;
+  color: #0f172a;
+}
+
+.vehicle-route {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.vehicle-crop {
+  margin: 8px 0;
+  color: #475569;
+  font-size: 13px;
+}
+
+.vehicle-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.vehicle-details div {
+  padding: 12px 8px;
+  background: #f8fafc;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.vehicle-details small {
+  display: block;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.vehicle-details strong {
+  display: block;
+  margin-top: 4px;
+  color: #15803d;
+  font-size: 15px;
+}
+
+.request-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #166534;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.request-btn:hover {
+  background: #14532d;
+}
+
+.request-btn.requested {
+  background: #16a34a;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+  .load-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .vehicle-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .load-form {
+    grid-template-columns: 1fr;
+  }
+
+  .sajha-heading h1 {
+    font-size: 30px;
+  }
+
+  .vehicle-details {
+    grid-template-columns: 1fr;
+  }
+}

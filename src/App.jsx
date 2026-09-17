@@ -13,6 +13,47 @@ function App() {
   const [quantity, setQuantity] = useState(100)
   const [freight, setFreight] = useState(500)
   const [profit, setProfit] = useState(null)
+  
+// =========================================
+// SAJHA GADI STATES
+// =========================================
+
+const [pickup, setPickup] = useState('Purnia')
+const [destination, setDestination] = useState('Gulabbagh')
+const [loadCrop, setLoadCrop] = useState('Wheat')
+const [loadQuantity, setLoadQuantity] = useState(20)
+
+const [vehicles, setVehicles] = useState([
+  {
+    id: 1,
+    driver: 'Local Transport',
+    route: 'Purnia → Gulabbagh',
+    capacity: 40,
+    available: 20,
+    freight: 800,
+    status: 'Available',
+  },
+  {
+    id: 2,
+    driver: 'Kisan Transport',
+    route: 'Purnia → Araria',
+    capacity: 50,
+    available: 30,
+    freight: 1000,
+    status: 'Available',
+  },
+  {
+    id: 3,
+    driver: 'Bihar Agro Transport',
+    route: 'Purnia → Katihar',
+    capacity: 60,
+    available: 35,
+    freight: 1200,
+    status: 'Available',
+  },
+])
+
+const [requestedVehicle, setRequestedVehicle] = useState(null)
 
   const mandiData = [
     {
@@ -77,7 +118,6 @@ const calculateProfit = () => {
     alert('Pehle ek mandi select karein.')
     return
   }
-
   const totalSaleValue =
     selectedMandi.modal * Number(quantity)
 
@@ -89,6 +129,41 @@ const calculateProfit = () => {
     freightCost: Number(freight),
     netProfit: netProfit,
   })
+}
+// =========================================
+// SAJHA GADI - POST LOAD
+// =========================================
+
+const postLoad = () => {
+  if (!pickup || !destination || !loadQuantity) {
+    alert('Please load details complete karein.')
+    return
+  }
+
+  if (pickup === destination) {
+    alert('Pickup aur destination alag hona chahiye.')
+    return
+  }
+
+  const newVehicle = {
+    id: Date.now(),
+    driver: 'Your Shared Load',
+    route: `${pickup} → ${destination}`,
+    capacity: Number(loadQuantity),
+    available: Number(loadQuantity),
+    freight: 700,
+    status: 'Looking for Partners',
+    crop: loadCrop,
+  }
+
+  setVehicles((previousVehicles) => [
+    newVehicle,
+    ...previousVehicles,
+  ])
+
+  alert('Your load successfully post ho gaya!')
+
+  setLoadQuantity(20)
 }
 
   return (
@@ -268,7 +343,7 @@ const calculateProfit = () => {
 
         </div>
 
-        {/* Profit Calculator */}
+{/* Profit Calculator */}
 {selectedMandi && (
   <div className="profit-section">
 
@@ -423,6 +498,264 @@ const calculateProfit = () => {
 
   </div>
 )}
+{/* =========================================
+    SAJHA GADI
+========================================= */}
+
+<section className="sajha-section">
+
+  <div className="sajha-heading">
+
+    <div>
+      <p className="tagline">🚚 SAJHA GADI</p>
+
+      <h1>
+        Transport Share Karo,
+        <br />
+        <span>Freight Cost Bachao</span>
+      </h1>
+
+      <p>
+        Apna agricultural load post karein aur
+        nearby farmers ke saath vehicle share karein.
+      </p>
+    </div>
+
+  </div>
+
+
+  {/* Post Load Card */}
+
+  <div className="load-post-card">
+
+    <div className="load-post-heading">
+      <div className="load-icon">
+        🚜
+      </div>
+
+      <div>
+        <h2>Post Your Load</h2>
+
+        <p>
+          Apne transport requirement ki details enter karein.
+        </p>
+      </div>
+    </div>
+
+
+    <div className="load-form">
+
+      {/* Pickup */}
+
+      <div className="input-group">
+
+        <label>
+          📍 Pickup Location
+        </label>
+
+        <select
+          value={pickup}
+          onChange={(e) => setPickup(e.target.value)}
+        >
+          <option>Purnia</option>
+          <option>Araria</option>
+          <option>Katihar</option>
+          <option>Bhagalpur</option>
+        </select>
+
+      </div>
+
+
+      {/* Destination */}
+
+      <div className="input-group">
+
+        <label>
+          🏁 Destination
+        </label>
+
+        <select
+          value={destination}
+          onChange={(e) =>
+            setDestination(e.target.value)
+          }
+        >
+          <option>Gulabbagh</option>
+          <option>Purnia</option>
+          <option>Araria</option>
+          <option>Katihar</option>
+          <option>Bhagalpur</option>
+        </select>
+
+      </div>
+
+
+      {/* Crop */}
+
+      <div className="input-group">
+
+        <label>
+          🌾 Crop
+        </label>
+
+        <select
+          value={loadCrop}
+          onChange={(e) =>
+            setLoadCrop(e.target.value)
+          }
+        >
+          <option>Wheat</option>
+          <option>Rice</option>
+          <option>Maize</option>
+          <option>Potato</option>
+        </select>
+
+      </div>
+
+
+      {/* Quantity */}
+
+      <div className="input-group">
+
+        <label>
+          📦 Quantity (Quintal)
+        </label>
+
+        <input
+          type="number"
+          min="1"
+          value={loadQuantity}
+          onChange={(e) =>
+            setLoadQuantity(e.target.value)
+          }
+        />
+
+      </div>
+
+    </div>
+
+
+    <button
+      className="post-load-btn"
+      onClick={postLoad}
+    >
+      🚚 Post My Load
+    </button>
+
+  </div>
+
+
+  {/* Available Vehicles */}
+
+  <div className="vehicle-area">
+
+    <div className="vehicle-heading">
+
+      <div>
+        <p className="tagline">
+          AVAILABLE TRANSPORT
+        </p>
+
+        <h2>
+          Nearby Shared Vehicles
+        </h2>
+      </div>
+
+      <span className="vehicle-count">
+        {vehicles.length} Vehicles
+      </span>
+
+    </div>
+
+
+    <div className="vehicle-grid">
+
+      {vehicles.map((vehicle) => (
+
+        <div
+          className="vehicle-card"
+          key={vehicle.id}
+        >
+
+          <div className="vehicle-card-top">
+
+            <div className="vehicle-icon">
+              🚚
+            </div>
+
+            <span className="available-badge">
+              ● {vehicle.status}
+            </span>
+
+          </div>
+
+
+          <h3>
+            {vehicle.driver}
+          </h3>
+
+          <p className="vehicle-route">
+            📍 {vehicle.route}
+          </p>
+
+
+          {vehicle.crop && (
+            <p className="vehicle-crop">
+              🌾 Crop: {vehicle.crop}
+            </p>
+          )}
+
+
+          <div className="vehicle-details">
+
+            <div>
+              <small>Vehicle Capacity</small>
+              <strong>
+                {vehicle.capacity} Q
+              </strong>
+            </div>
+
+            <div>
+              <small>Available Space</small>
+              <strong>
+                {vehicle.available} Q
+              </strong>
+            </div>
+
+            <div>
+              <small>Estimated Freight</small>
+              <strong>
+                ₹{vehicle.freight}
+              </strong>
+            </div>
+
+          </div>
+
+
+          <button
+            className={`request-btn ${
+              requestedVehicle === vehicle.id
+                ? 'requested'
+                : ''
+            }`}
+            onClick={() =>
+              setRequestedVehicle(vehicle.id)
+            }
+          >
+            {requestedVehicle === vehicle.id
+              ? '✓ Request Sent'
+              : '🤝 Request to Join'}
+          </button>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+</section>
 
       </main>
 
