@@ -30,6 +30,11 @@ function App() {
       modal: 2300,
     },
   ]
+  const filteredMandiData = mandiData.filter(
+    (mandi) =>
+      mandi.location.includes(state) && 
+      mandi.location.includes(district)
+  )
 
   return (
     <div className="app">
@@ -110,7 +115,6 @@ function App() {
           className="search-btn"
           onClick={() => {
             setSearched(true);
-            alert("SEARCH CLICKED");
           }}
           >
           🔍 Search Mandi
@@ -132,8 +136,13 @@ function App() {
 
         {/* Mandi Cards */}
         <div className="mandi-grid">
+           {searched && filteredMandiData.length === 0 && (
+              <p className="no-result">
+                No mandi found for this location.
+              </p>
+            )}
 
-          {mandiData.map((mandi) => (
+          {filteredMandiData.map((mandi) => (
             <div className="mandi-card" key={mandi.name}>
 
               <div className="mandi-card-header">
