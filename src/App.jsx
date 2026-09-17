@@ -5,6 +5,7 @@ function App() {
   const [crop, setCrop] = useState('Wheat')
   const [state, setState] = useState('Bihar')
   const [district, setDistrict] = useState('Purnia')
+  const [searched, setSearched] = useState(false)
 
   const mandiData = [
     {
@@ -105,10 +106,20 @@ function App() {
               <option>Bhagalpur</option>
             </select>
           </div>
-
-          <button className="search-btn">
-            🔍 Search Mandi
-          </button>
+          <button
+          className="search-btn"
+          onClick={() => {
+            setSearched(true);
+            alert("SEARCH CLICKED");
+          }}
+          >
+          🔍 Search Mandi
+        </button>
+        {searched && (
+            <div className="search-result-message">
+            🔎 Searching mandi for {crop} in {district}, {state}...
+          </div>
+        )}
 
         </div>
 
