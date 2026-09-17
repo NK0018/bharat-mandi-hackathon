@@ -6,25 +6,48 @@ function App() {
   const [state, setState] = useState('Bihar')
   const [district, setDistrict] = useState('Purnia')
   const [searched, setSearched] = useState(false)
+  const [selectedMandi, setSelectedMandi] = useState(null)
+  const [searchCrop, setSearchCrop] = useState('Wheat')
+  const [searchState, setSearchState] = useState('Bihar')
+  const [searchDistrict, setSearchDistrict] = useState('Purnia')
 
   const mandiData = [
     {
       name: 'Purnia Mandi',
       location: 'Purnia, Bihar',
+      crop: 'Wheat',
       min: 2200,
       max: 2450,
       modal: 2350,
     },
     {
+      name: 'Purnia Mandi',
+      location: 'Purnia, Bihar',
+      crop: 'Rice',
+      min: 1900,
+      max: 2200,
+      modal: 2050,
+    },
+    {
       name: 'Gulabbagh Mandi',
       location: 'Purnia, Bihar',
+      crop: 'Wheat',
       min: 2250,
       max: 2500,
       modal: 2400,
     },
     {
+      name: 'Gulabbagh Mandi',
+      location: 'Purnia, Bihar',
+      crop: 'Rice',
+      min: 1950,
+      max: 2250,
+      modal: 2100,
+    },
+    {
       name: 'Araria Mandi',
       location: 'Araria, Bihar',
+      crop: 'Wheat',
       min: 2150,
       max: 2380,
       modal: 2300,
@@ -32,9 +55,19 @@ function App() {
   ]
   const filteredMandiData = mandiData.filter(
     (mandi) =>
-      mandi.location.includes(state) && 
-      mandi.location.includes(district)
+      mandi.crop === searchCrop &&
+      mandi.location.includes(searchState) &&
+      mandi.location.includes(searchDistrict)
   )
+  const highestPrice = Math.max(
+    ...filteredMandiData.map((mandi) => mandi.modal)
+  )
+
+const lowestPrice = Math.min(
+  ...filteredMandiData.map((mandi) => mandi.modal)
+)
+
+const priceDifference = highestPrice - lowestPrice
 
   return (
     <div className="app">
@@ -113,15 +146,18 @@ function App() {
           </div>
           <button
           className="search-btn"
-          onClick={() => {
-            setSearched(true);
-          }}
+         onClick={() => {
+          setSearchCrop(crop)
+          setSearchState(state)
+          setSearchDistrict(district)
+          setSearched(true)
+        }}
           >
           🔍 Search Mandi
         </button>
         {searched && (
             <div className="search-result-message">
-            🔎 Searching mandi for {crop} in {district}, {state}...
+            🔎 Searching mandi for {searchCrop} in {searchDistrict}, {searchState}...
           </div>
         )}
 
@@ -130,10 +166,21 @@ function App() {
         {/* Selected Location */}
         <div className="selection-info">
           Showing prices for{' '}
-          <strong>{crop}</strong> in{' '}
-          <strong>{district}, {state}</strong>
+          <strong>{searchCrop}</strong> in{' '}
+          <strong>{searchDistrict}, {searchState}</strong>
         </div>
-
+        {searched && filteredMandiData.length > 1 && (
+          <div className="price-difference">
+            💰 Price Difference: ₹{priceDifference}
+          </div>
+        )}
+        {selectedMandi && (
+          <div className="selected-mandi">
+            📊 You selected: <strong>{selectedMandi.name}</strong>
+            <br />
+            💰 Modal Price: <strong>₹{selectedMandi.modal}</strong>
+          </div>
+        )}
         {/* Mandi Cards */}
         <div className="mandi-grid">
            {searched && filteredMandiData.length === 0 && (
@@ -169,6 +216,11 @@ function App() {
                     ₹{mandi.modal}
                   </strong>
                 </div>
+                {mandi.modal === highestPrice && (
+                  <small className="best-price">
+                    ⭐ Best Modal Price
+                  </small>
+                )}
 
                 <div>
                   <small>Max Price</small>
@@ -177,7 +229,10 @@ function App() {
 
               </div>
 
-              <button className="compare-btn">
+              <button
+                className="compare-btn"
+                onClick={() => setSelectedMandi(mandi)}
+              >
                 Compare Mandi
               </button>
 
