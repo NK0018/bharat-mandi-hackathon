@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 function App() {
@@ -324,29 +324,44 @@ const smartTransportMatches = recommendedRoute
   ? vehicles
       .filter((vehicle) => {
 
+        const vehicleDestination =
+          String(vehicle.destination || '').trim()
+
+        const recommendedDestination =
+          String(recommendedRoute || '').trim()
+
         const routeMatches =
-          vehicle.destination === recommendedRoute
+          vehicleDestination === recommendedDestination
 
         const cropMatches =
           !vehicle.crop ||
           vehicle.crop === dashboardCrop
 
+        const availableQuantity =
+          Number(vehicle.available || 0)
+
         const spaceAvailable =
-          Number(vehicle.available) > 0
+          availableQuantity > 0
+
+        const alreadySelected =
+          joinedVehicle === vehicle.id
 
         return (
           routeMatches &&
           cropMatches &&
-          spaceAvailable
+          (
+            spaceAvailable ||
+            alreadySelected
+          )
         )
       })
       .map((vehicle) => {
 
         const requiredQuantity =
-          Number(dashboardQuantity)
+          Number(dashboardQuantity || 0)
 
         const availableQuantity =
-          Number(vehicle.available)
+          Number(vehicle.available || 0)
 
         const coveredQuantity =
           Math.min(
@@ -364,13 +379,16 @@ const smartTransportMatches = recommendedRoute
         const isFullMatch =
           availableQuantity >= requiredQuantity
 
+        const vehicleCapacity =
+          Number(vehicle.capacity || 1)
+
         const estimatedShare =
           Math.round(
             (
-              Number(vehicle.freight) *
+              Number(vehicle.freight || 0) *
               coveredQuantity
             ) /
-            Number(vehicle.capacity)
+            vehicleCapacity
           )
 
         return {
@@ -1480,9 +1498,24 @@ return (
     {/* ACTION BUTTON */}
     <button
       className="smart-join-btn"
+      disabled={joinedVehicle === vehicle.id}
       onClick={() => {
 
-        setPickup(vehicle.pickup)
+        const usedQuantity =
+          Number(vehicle.coveredQuantity)
+
+        const freightShare =
+          Number(vehicle.estimatedShare)
+
+        // Selected vehicle save karo
+        setJoinedVehicle(
+          vehicle.id
+        )
+
+        // Sajha Gadi details
+        setPickup(
+          vehicle.pickup
+        )
 
         setDestination(
           vehicle.destination
@@ -1493,19 +1526,16 @@ return (
         )
 
         setLoadQuantity(
-          vehicle.coveredQuantity
+          usedQuantity
         )
 
-
-        const freightShare =
-          vehicle.estimatedShare
-
-
+        // Shared freight result
         setSharedFreight({
-          vehicleId: vehicle.id,
+          vehicleId:
+            vehicle.id,
 
           quantity:
-            vehicle.coveredQuantity,
+            usedQuantity,
 
           totalFreight:
             vehicle.freight,
@@ -1514,25 +1544,23 @@ return (
             freightShare,
 
           remainingSpace:
-            vehicle.available -
-            vehicle.coveredQuantity,
+            Math.max(
+              Number(vehicle.available) -
+              usedQuantity,
+              0
+            ),
         })
-
-
-        setJoinedVehicle(
-          vehicle.id
-        )
-
 
         alert(
           vehicle.isFullMatch
-            ? `Full match! ${vehicle.coveredQuantity} Q ke liye estimated shared freight ₹${freightShare}`
-            : `Partial match! ${vehicle.coveredQuantity} Q cover hoga aur ${vehicle.remainingQuantity} Q ke liye additional transport chahiye.`
+            ? `Full Match! ${usedQuantity} Q transport selected. Estimated freight share ₹${freightShare}.`
+            : `Partial Match! ${usedQuantity} Q transport selected. Remaining ${vehicle.remainingQuantity} Q ke liye additional transport required hai.`
         )
-
       }}
     >
-      🤝 Use Available Space
+      {joinedVehicle === vehicle.id
+        ? '✓ Transport Selected'
+        : '🤝 Use Available Space'}
     </button>
 
 
