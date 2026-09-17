@@ -1428,3 +1428,148 @@ select option {
   }
 
 }
+/* =========================================
+   PARTIAL TRANSPORT MATCHING
+   ========================================= */
+
+.full-transport-match {
+  border-color: #86efac;
+}
+
+.partial-transport-match {
+  border-color: #fdba74;
+}
+
+
+/* =========================================
+   TRANSPORT STATUS
+   ========================================= */
+
+.transport-status {
+  padding: 7px 11px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.transport-status.full {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.transport-status.partial {
+  color: #9a3412;
+  background: #ffedd5;
+}
+
+
+/* =========================================
+   MATCH RESULT
+   ========================================= */
+
+.transport-match-result {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 10px;
+
+  margin-top: 18px;
+}
+
+.transport-match-result div {
+  padding: 13px;
+
+  border-radius: 10px;
+}
+
+.full-result div {
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+}
+
+.partial-result div {
+  background: #fff7ed;
+
+  border: 1px solid #fed7aa;
+}
+
+.transport-match-result small {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #64748b;
+
+  font-size: 11px;
+}
+
+.transport-match-result strong {
+  color: #334155;
+
+  font-size: 15px;
+}
+
+
+/* =========================================
+   PARTIAL WARNING
+   ========================================= */
+
+.partial-warning {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-top: 15px;
+  padding: 13px;
+
+  background: #fff7ed;
+
+  border: 1px solid #fed7aa;
+
+  border-radius: 10px;
+}
+
+.partial-warning span {
+  font-size: 18px;
+}
+
+.partial-warning p {
+  margin: 0;
+
+  color: #9a3412;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   PARTIAL CAPACITY TAG
+   ========================================= */
+
+.partial-capacity-tag {
+  color: #9a3412 !important;
+
+  background: #ffedd5 !important;
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+  .transport-match-result {
+    grid-template-columns: 1fr;
+  }
+
+}
