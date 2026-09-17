@@ -60,6 +60,9 @@ const [vehicles, setVehicles] = useState([
 ])
 
 const [requestedVehicle, setRequestedVehicle] = useState(null)
+const [joinedVehicle, setJoinedVehicle] = useState(null)
+const [sharedFreight, setSharedFreight] = useState(null)
+
 const matchedVehicles = vehicles.filter(
   (vehicle) => {
     const routeMatches =
@@ -189,10 +192,57 @@ const postLoad = () => {
   alert('Your load successfully post ho gaya!')
 
 }
+// Sajha Gadi - request to join
+const requestToJoin = (vehicle) => {
+  const requiredQuantity = Number(loadQuantity)
 
-  return (
-    <div className="app">
+  if (!requiredQuantity || requiredQuantity <= 0) {
+    alert('Please valid quantity enter karein.')
+    return
+  }
 
+  if (requiredQuantity > vehicle.available) {
+    alert(
+      `Is vehicle me sirf ${vehicle.available} Q space available hai.`
+    )
+    return
+  }
+
+  // Farmer ke load ke according estimated freight share
+  const freightShare = Math.round(
+    (vehicle.freight * requiredQuantity) / vehicle.capacity
+  )
+
+  // Vehicle ki available space update karo
+  setVehicles((previousVehicles) =>
+    previousVehicles.map((item) =>
+      item.id === vehicle.id
+        ? {
+            ...item,
+            available: item.available - requiredQuantity,
+          }
+        : item
+    )
+  )
+
+  setRequestedVehicle(vehicle.id)
+  setJoinedVehicle(vehicle.id)
+
+  setSharedFreight({
+    vehicleId: vehicle.id,
+    quantity: requiredQuantity,
+    totalFreight: vehicle.freight,
+    farmerShare: freightShare,
+    remainingSpace: vehicle.available - requiredQuantity,
+  })
+
+  alert(
+    `Request sent! Estimated shared freight: ₹${freightShare}`
+  )
+}
+
+return (
+  <div className="app">
       {/* Navbar */}
       <nav className="navbar">
         <h2>🌾 Bharat Mandi</h2>
@@ -767,16 +817,13 @@ const postLoad = () => {
 
           <button
             className={`request-btn ${
-              requestedVehicle === vehicle.id
-                ? 'requested'
-                : ''
+              joinedVehicle === vehicle.id ? 'requested' : ''
             }`}
-            onClick={() =>
-              setRequestedVehicle(vehicle.id)
-            }
+            onClick={() => requestToJoin(vehicle)}
+            disabled={joinedVehicle === vehicle.id}
           >
-            {requestedVehicle === vehicle.id
-              ? '✓ Request Sent'
+            {joinedVehicle === vehicle.id
+              ? '✓ Joined Successfully'
               : '🤝 Request to Join'}
           </button>
 
@@ -788,6 +835,56 @@ const postLoad = () => {
     </div>
 
   </div>
+   {/* Shared Freight Result */}
+    {sharedFreight && (
+      <div className="shared-freight-result">
+        <div className="shared-freight-icon">
+          💰
+        </div>
+
+        <div className="shared-freight-content">
+          <p className="tagline">
+            SHARED FREIGHT ESTIMATE
+          </p>
+
+          <h3>
+            Your Estimated Freight Share
+          </h3>
+
+          <div className="freight-summary">
+            <div>
+              <small>Your Load</small>
+              <strong>
+                {sharedFreight.quantity} Q
+              </strong>
+            </div>
+
+            <div>
+              <small>Total Vehicle Freight</small>
+              <strong>
+                ₹{sharedFreight.totalFreight}
+              </strong>
+            </div>
+
+            <div>
+              <small>Your Estimated Share</small>
+              <strong>
+                ₹{sharedFreight.farmerShare}
+              </strong>
+            </div>
+          </div>
+
+          <p className="freight-note">
+            Vehicle me ab approximately{' '}
+            <strong>
+              {sharedFreight.remainingSpace} Q
+            </strong>{' '}
+            space available hai.
+          </p>
+        </div>
+      </div>
+    )}
+
 
 </section>
 
