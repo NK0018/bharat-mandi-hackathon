@@ -9,19 +9,20 @@ body {
   min-height: 100vh;
 }
 
-/* Navbar */
+/* NAVBAR */
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 18px 60px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-bottom: 1px solid #dfe5dc;
 }
 
 .navbar h2 {
   margin: 0;
+  color: #3f7d20;
 }
 
 .nav-links {
@@ -33,69 +34,201 @@ body {
   padding: 10px 16px;
   border: none;
   background: transparent;
+  color: #374151;
   cursor: pointer;
 }
 
-/* Hero */
+/* RADAR */
 
-.hero-section {
-  min-height: 75vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.radar-section {
+  max-width: 1100px;
+  margin: auto;
+  padding: 70px 25px;
+}
+
+.radar-heading {
   text-align: center;
 }
 
-.hero-content {
-  max-width: 800px;
-  padding: 40px 20px;
-}
-
 .tagline {
-  font-size: 16px;
-  color: #4b7f35;
+  color: #3f7d20;
   font-weight: bold;
+  letter-spacing: 1px;
 }
 
-.hero-content h1 {
-  font-size: 56px;
-  line-height: 1.1;
-  margin: 20px 0;
+.radar-heading h1 {
+  font-size: 48px;
+  line-height: 1.15;
+  margin: 15px 0;
+  color: #1f2937;
 }
 
-.hero-content h1 span {
+.radar-heading h1 span {
   color: #3f7d20;
 }
 
-.hero-text {
-  font-size: 20px;
-  line-height: 1.6;
-  color: #5b6470;
+.radar-heading > p:last-child {
+  font-size: 18px;
+  color: #667085;
 }
 
-.hero-buttons {
-  margin-top: 30px;
+/* FILTER CARD */
+
+.filter-card {
+  margin-top: 45px;
+  padding: 25px;
+  background: white;
+  border: 1px solid #dfe5dc;
+  border-radius: 14px;
   display: flex;
-  justify-content: center;
-  gap: 15px;
+  gap: 18px;
+  align-items: end;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
 }
 
-.primary-btn,
-.secondary-btn {
-  padding: 14px 24px;
+.filter-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.filter-group select {
+  padding: 12px;
+  border: 1px solid #ccd5c8;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
+  background: white;
+}
+
+.search-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #3f7d20;
+  color: white;
+  font-size: 15px;
   cursor: pointer;
 }
 
-.primary-btn {
-  border: none;
+/* SELECTED INFO */
+
+.selection-info {
+  margin: 30px 0 20px;
+  padding: 15px;
+  background: #edf7e9;
+  border-radius: 8px;
+  text-align: center;
+  color: #355d25;
+}
+
+/* MANDI GRID */
+
+.mandi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.mandi-card {
+  background: white;
+  border: 1px solid #dfe5dc;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.mandi-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mandi-card h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.mandi-card-header p {
+  margin: 6px 0 0;
+  color: #667085;
+}
+
+.verified {
+  height: fit-content;
+  padding: 5px 8px;
+  border-radius: 20px;
+  background: #e9f7e5;
+  color: #3f7d20;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.price-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 25px 0;
+}
+
+.price-row div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.price-row small {
+  color: #667085;
+}
+
+.price-row strong {
+  font-size: 18px;
+}
+
+.modal-price {
+  color: #3f7d20;
+}
+
+.compare-btn {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #3f7d20;
+  border-radius: 8px;
+  background: white;
+  color: #3f7d20;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.compare-btn:hover {
   background: #3f7d20;
   color: white;
 }
 
-.secondary-btn {
-  border: 2px solid #3f7d20;
-  background: white;
-  color: #3f7d20;
+/* MOBILE */
+
+@media (max-width: 800px) {
+  .navbar {
+    padding: 18px 25px;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .filter-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mandi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .radar-heading h1 {
+    font-size: 36px;
+  }
 }
