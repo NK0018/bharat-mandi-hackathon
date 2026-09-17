@@ -1552,59 +1552,37 @@ return (
 
 
     {/* ACTION BUTTON */}
-    <button
+   <button
       className="smart-join-btn"
-      disabled={joinedVehicle === vehicle.id}
       onClick={() => {
-
         const usedQuantity =
           Number(vehicle.coveredQuantity)
 
         const freightShare =
           Number(vehicle.estimatedShare)
 
-        // Selected vehicle save karo
-        setJoinedVehicle(
-          vehicle.id
-        )
+        if (usedQuantity <= 0) {
+          alert(
+            'Is vehicle me abhi usable space available nahi hai.'
+          )
+          return
+        }
 
-        // Sajha Gadi details
-        setPickup(
-          vehicle.pickup
-        )
+        setPickup(vehicle.pickup)
+        setDestination(vehicle.destination)
+        setLoadCrop(dashboardCrop)
+        setLoadQuantity(usedQuantity)
 
-        setDestination(
-          vehicle.destination
-        )
+        setJoinedVehicle(vehicle.id)
 
-        setLoadCrop(
-          dashboardCrop
-        )
-
-        setLoadQuantity(
-          usedQuantity
-        )
-
-        // Shared freight result
         setSharedFreight({
-          vehicleId:
-            vehicle.id,
-
-          quantity:
-            usedQuantity,
-
-          totalFreight:
-            vehicle.freight,
-
-          farmerShare:
-            freightShare,
-
+          vehicleId: vehicle.id,
+          quantity: usedQuantity,
+          totalFreight: vehicle.freight,
+          farmerShare: freightShare,
           remainingSpace:
-            Math.max(
-              Number(vehicle.available) -
-              usedQuantity,
-              0
-            ),
+            Number(vehicle.available) -
+            usedQuantity,
         })
 
         alert(
