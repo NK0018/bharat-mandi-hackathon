@@ -407,6 +407,62 @@ const smartTransportMatches = recommendedRoute
           Number(a.isFullMatch)
       )
   : []
+  // =========================================
+// FINAL FARMER DECISION
+// =========================================
+
+const finalRequiredQuantity =
+  Number(dashboardQuantity || 0)
+
+const finalMandiPrice =
+  recommendedMandi
+    ? Number(recommendedMandi.modal)
+    : 0
+
+const finalGrossSale =
+  finalMandiPrice *
+  finalRequiredQuantity
+
+const finalTransportSelected =
+  sharedFreight !== null
+
+const finalCoveredQuantity =
+  finalTransportSelected
+    ? Number(sharedFreight.quantity)
+    : 0
+
+const finalRemainingQuantity =
+  Math.max(
+    finalRequiredQuantity -
+    finalCoveredQuantity,
+    0
+  )
+
+const finalFreightCost =
+  finalTransportSelected
+    ? Number(sharedFreight.farmerShare)
+    : recommendedMandi
+      ? Number(recommendedMandi.estimatedFreight)
+      : 0
+
+const finalCoveredSaleValue =
+  finalMandiPrice *
+  finalCoveredQuantity
+
+const finalCoveredNetEarning =
+  finalCoveredSaleValue -
+  finalFreightCost
+
+const finalFullTransport =
+  finalTransportSelected &&
+  finalRemainingQuantity === 0
+
+const finalDecisionStatus =
+  finalFullTransport
+    ? 'Transport Fully Covered'
+    : finalTransportSelected
+      ? 'Partial Transport Covered'
+      : 'Transport Not Selected'
 return (
   <div className="app">
       {/* Navbar */}
@@ -1573,6 +1629,211 @@ return (
 
   </div>
 )}
+        {/* =========================================
+            FINAL FARMER DECISION
+            ========================================= */}
+
+        {recommendedMandi && (
+          <div className="final-decision-card">
+
+            <div className="final-decision-header">
+
+              <div>
+                <span className="section-tag">
+                  👨‍🌾 FINAL FARMER DECISION
+                </span>
+
+                <h2>
+                  Aapke liye Mandi Decision
+                </h2>
+
+                <p>
+                  Mandi price aur transport ko
+                  combine karke estimated earning.
+                </p>
+              </div>
+
+              <div className="final-mandi-badge">
+                📍 {recommendedMandi.name}
+              </div>
+
+            </div>
+
+
+            {/* MANDI CALCULATION */}
+            <div className="final-calculation">
+
+              <div className="final-step">
+                <small>Crop</small>
+
+                <strong>
+                  {dashboardCrop}
+                </strong>
+              </div>
+
+
+              <div className="calculation-symbol">
+                ×
+              </div>
+
+
+              <div className="final-step">
+                <small>Quantity</small>
+
+                <strong>
+                  {finalRequiredQuantity} Q
+                </strong>
+              </div>
+
+
+              <div className="calculation-symbol">
+                ×
+              </div>
+
+
+              <div className="final-step">
+                <small>Modal Price</small>
+
+                <strong>
+                  ₹{finalMandiPrice}
+                </strong>
+              </div>
+
+            </div>
+
+
+            {/* GROSS SALE */}
+            <div className="final-result">
+
+              <small>
+                Estimated Gross Sale
+              </small>
+
+              <strong>
+                ₹{finalGrossSale.toLocaleString('en-IN')}
+              </strong>
+
+            </div>
+
+
+            {/* TRANSPORT STATUS */}
+            <div className="transport-final-summary">
+
+              <div>
+                <small>
+                  Transport Status
+                </small>
+
+                <strong>
+                  {finalDecisionStatus}
+                </strong>
+              </div>
+
+
+              <div>
+                <small>
+                  Covered Quantity
+                </small>
+
+                <strong>
+                  {finalCoveredQuantity} Q
+                </strong>
+              </div>
+
+
+              <div>
+                <small>
+                  Remaining Quantity
+                </small>
+
+                <strong>
+                  {finalRemainingQuantity} Q
+                </strong>
+              </div>
+
+
+              <div>
+                <small>
+                  Freight Cost
+                </small>
+
+                <strong>
+                  ₹{finalFreightCost.toLocaleString('en-IN')}
+                </strong>
+              </div>
+
+            </div>
+
+
+            {/* PARTIAL TRANSPORT MESSAGE */}
+            {finalTransportSelected &&
+              finalRemainingQuantity > 0 && (
+                <div className="final-pending-warning">
+
+                  ⚠️
+
+                  <div>
+                    <strong>
+                      {finalRemainingQuantity} Q
+                      transport pending
+                    </strong>
+
+                    <p>
+                      Abhi {finalCoveredQuantity} Q
+                      ke liye shared transport
+                      available hai. Baaki quantity
+                      ke liye additional transport
+                      arrange karna hoga.
+                    </p>
+                  </div>
+
+                </div>
+              )}
+
+
+            {/* FINAL NET RESULT */}
+            {finalTransportSelected ? (
+              <div className="partial-final-result">
+
+                <div>
+                  <small>
+                    Current Covered Net Earning
+                  </small>
+
+                  <strong>
+                    ₹{finalCoveredNetEarning.toLocaleString('en-IN')}
+                  </strong>
+                </div>
+
+                <p>
+                  Ye calculation sirf currently
+                  covered quantity aur uske
+                  proportional freight par based hai.
+                </p>
+
+              </div>
+            ) : (
+              <div className="final-pending-warning">
+
+                🚚
+
+                <div>
+                  <strong>
+                    Transport select karein
+                  </strong>
+
+                  <p>
+                    Final transport-adjusted earning
+                    calculate karne ke liye Sajha Gadi
+                    se vehicle select karein.
+                  </p>
+                </div>
+
+              </div>
+            )}
+
+          </div>
+        )}
 
 </section>
 

@@ -1573,3 +1573,244 @@ select option {
   }
 
 }
+/* =========================================
+   FINAL FARMER DECISION
+   ========================================= */
+
+.final-decision-card {
+  margin-top: 35px;
+  padding: 35px;
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.08);
+}
+
+.final-decision-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.final-decision-header h2 {
+  margin: 8px 0 8px;
+  font-size: 30px;
+  color: #14532d;
+}
+
+.final-decision-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 16px;
+}
+
+.final-mandi-badge {
+  padding: 12px 18px;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* CALCULATION */
+
+.final-calculation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.final-step {
+  padding: 20px;
+  text-align: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+.final-step small {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.final-step strong {
+  color: #14532d;
+  font-size: 20px;
+}
+
+.calculation-symbol {
+  font-size: 25px;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+
+/* GROSS SALE */
+
+.final-result {
+  padding: 22px;
+  margin-bottom: 22px;
+  text-align: center;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+}
+
+.final-result small {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+}
+
+.final-result strong {
+  font-size: 32px;
+  color: #15803d;
+}
+
+
+/* TRANSPORT SUMMARY */
+
+.transport-final-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.transport-final-summary > div {
+  padding: 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.transport-final-summary small {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.transport-final-summary strong {
+  color: #14532d;
+  font-size: 17px;
+}
+
+
+/* PENDING WARNING */
+
+.final-pending-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  color: #9a3412;
+}
+
+.final-pending-warning > div {
+  flex: 1;
+}
+
+.final-pending-warning strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 17px;
+}
+
+.final-pending-warning p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+
+/* NET EARNING */
+
+.partial-final-result {
+  padding: 25px;
+  background: #ecfdf5;
+  border: 2px solid #86efac;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.partial-final-result small {
+  display: block;
+  margin-bottom: 8px;
+  color: #166534;
+  font-weight: 600;
+}
+
+.partial-final-result strong {
+  display: block;
+  font-size: 34px;
+  color: #15803d;
+}
+
+.partial-final-result p {
+  margin: 12px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+
+  .transport-final-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .final-calculation {
+    grid-template-columns: 1fr;
+  }
+
+  .calculation-symbol {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .final-decision-card {
+    padding: 22px;
+  }
+
+  .final-decision-header {
+    flex-direction: column;
+  }
+
+  .final-mandi-badge {
+    width: 100%;
+    text-align: center;
+  }
+
+  .transport-final-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .final-result strong {
+    font-size: 27px;
+  }
+
+  .partial-final-result strong {
+    font-size: 28px;
+  }
+
+}
