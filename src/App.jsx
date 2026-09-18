@@ -260,8 +260,7 @@ const calculateProfit = () => {
   })
 }
 const handleMandiSearch = async () => {
-  setSelectedMandi(null)
-  setComparisonRecords([])
+  
   setMandiLoading(true)
   setMandiError('')
 
@@ -783,6 +782,7 @@ return (
               <option>Katihar</option>
               <option>Bhagalpur</option>
               <option>Palnadu</option>
+              <option>Kishanganj</option>
             </select>
           </div>
           <button

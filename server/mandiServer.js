@@ -152,46 +152,22 @@ app.get('/api/mandi/compare', async (req, res) => {
       })
     }
 
-    const params = new URLSearchParams({
-      'api-key': API_KEY,
-      format: 'json',
-      limit: '100',
-    })
-
-    params.append(
-      'filters[state.keyword]',
-      state
-    )
-
-    params.append(
-      'filters[commodity]',
-      commodity
-    )
-
     console.log(
-      'COMPARISON API REQUEST:',
-      cacheKey
-    )
+  'COMPARISON PAGINATED REQUEST:',
+  cacheKey
+)
 
-    const response = await fetch(
-      `${API_BASE_URL}/${RESOURCE_ID}?${params.toString()}`
-    )
+const allRecords = await fetchMandiPages({
+  state,
+  commodity,
+  maxPages: 2,
+})
 
-    if (!response.ok) {
-      throw new Error(
-        `Data.gov.in comparison error: ${response.status}`
-      )
-    }
-
-    const data = await response.json()
-
-    // Data.gov.in kabhi-kabhi unrelated records return
-    // kar sakta hai, isliye exact commodity filter.
-    const records = (data.records || []).filter(
-      (record) =>
-        record.commodity?.trim().toLowerCase() ===
-        commodity.trim().toLowerCase()
-    )
+const records = allRecords.filter(
+  (record) =>
+    record.commodity?.trim().toLowerCase() ===
+    commodity.trim().toLowerCase()
+)
 
     comparisonCache.set(cacheKey, {
       timestamp: Date.now(),
@@ -222,7 +198,66 @@ const server = app.listen(PORT, '127.0.0.1', () => {
     `Bharat Mandi backend running on http://localhost:${PORT}`
   )
 })
+// =====================================
+// Fetch Mandi Data with Pagination
+// =====================================
 
+async function fetchMandiPages({
+  state,
+  maxPages = 2,
+}) {
+  const allRecords = []
+
+  const pageSize = 100
+
+  for (let page = 0; page < maxPages; page++) {
+    const offset = page * pageSize
+
+    const params = new URLSearchParams({
+      'api-key': API_KEY,
+      format: 'json',
+      limit: String(pageSize),
+      offset: String(offset),
+    })
+
+    if (state) {
+      params.append(
+        'filters[state.keyword]',
+        state
+      )
+    }
+
+    console.log(
+      `Fetching mandi page ${page + 1}, offset ${offset}`
+    )
+
+    const response = await fetch(
+      `${API_BASE_URL}/${RESOURCE_ID}?${params.toString()}`
+    )
+
+    if (!response.ok) {
+      throw new Error(
+        `Data.gov.in pagination error: ${response.status}`
+      )
+    }
+
+    const data = await response.json()
+
+    const records = data.records || []
+
+    if (records.length === 0) {
+      break
+    }
+
+    allRecords.push(...records)
+
+    if (records.length < pageSize) {
+      break
+    }
+  }
+
+  return allRecords
+}
 server.on('error', (error) => {
   console.error('SERVER ERROR:', error)
 })
