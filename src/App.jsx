@@ -14,6 +14,9 @@ function App() {
   const [quantity, setQuantity] = useState(100)
   const [freight, setFreight] = useState(500)
   const [profit, setProfit] = useState(null)
+  const [mandiRecords, setMandiRecords] = useState([])
+  const [mandiLoading, setMandiLoading] = useState(false)
+  const [mandiError, setMandiError] = useState('')
  useEffect(() => {
   async function testMandiApi() {
     try {
@@ -154,21 +157,35 @@ const matchedVehicles = vehicles.filter(
       modal: 2300,
     },
   ]
-  const filteredMandiData = mandiData.filter(
-    (mandi) =>
-      mandi.crop === searchCrop &&
-      mandi.location.includes(searchState) &&
-      mandi.location.includes(searchDistrict)
-  )
-  const highestPrice = Math.max(
-    ...filteredMandiData.map((mandi) => mandi.modal)
-  )
+  const filteredMandiData = mandiRecords.map((record) => ({
+  id: `${record.market}-${record.commodity}-${record.arrival_date}`,
+  name: record.market,
+  location: `${record.district}, ${record.state}`,
+  crop: record.commodity,
+  min: Number(record.min_price),
+  max: Number(record.max_price),
+  modal: Number(record.modal_price),
+  arrivalDate: record.arrival_date,
+  variety: record.variety,
+  grade: record.grade,
+}))
 
-const lowestPrice = Math.min(
-  ...filteredMandiData.map((mandi) => mandi.modal)
-)
+const highestPrice =
+  filteredMandiData.length > 0
+    ? Math.max(
+        ...filteredMandiData.map((mandi) => mandi.modal)
+      )
+    : 0
 
-const priceDifference = highestPrice - lowestPrice
+const lowestPrice =
+  filteredMandiData.length > 0
+    ? Math.min(
+        ...filteredMandiData.map((mandi) => mandi.modal)
+      )
+    : 0
+
+const priceDifference =
+  highestPrice - lowestPrice
 
 const calculateProfit = () => {
   if (!selectedMandi) {
@@ -186,6 +203,30 @@ const calculateProfit = () => {
     freightCost: Number(freight),
     netProfit: netProfit,
   })
+}
+const handleMandiSearch = async () => {
+  setMandiLoading(true)
+  setMandiError('')
+
+  try {
+    const records = await fetchMandiPrices({
+      state,
+      district,
+      commodity: crop,
+    })
+
+    setMandiRecords(records)
+    setSearched(true)
+
+  } catch (error) {
+    console.error('Mandi search error:', error)
+    setMandiError(error.message)
+    setMandiRecords([])
+    setSearched(true)
+
+  } finally {
+    setMandiLoading(false)
+  }
 }
 // =========================================
 // SAJHA GADI - POST LOAD
@@ -654,6 +695,7 @@ return (
               <option>Rice</option>
               <option>Maize</option>
               <option>Potato</option>
+              <option>Chili Red</option>
             </select>
           </div>
 
@@ -668,6 +710,7 @@ return (
               <option>Uttar Pradesh</option>
               <option>West Bengal</option>
               <option>Punjab</option>
+              <option value="Andhra Pradesh">Andhra Pradesh</option>
             </select>
           </div>
 
@@ -682,6 +725,7 @@ return (
               <option>Araria</option>
               <option>Katihar</option>
               <option>Bhagalpur</option>
+              <option>Palnadu</option>
             </select>
           </div>
           <button
@@ -690,7 +734,7 @@ return (
           setSearchCrop(crop)
           setSearchState(state)
           setSearchDistrict(district)
-          setSearched(true)
+          handleMandiSearch()
         }}
           >
           🔍 Search Mandi
@@ -723,12 +767,30 @@ return (
         )}
         {/* Mandi Cards */}
         <div className="mandi-grid">
-           {searched && filteredMandiData.length === 0 && (
-              <p className="no-result">
-                No mandi found for this location.
-              </p>
-            )}
+        
+            {mandiLoading && (
+  <div className="no-result">
+    🔄 Fetching verified mandi prices...
+  </div>
+)}
 
+{mandiError && !mandiLoading && (
+  <div className="no-result">
+    ⚠️ {mandiError}
+  </div>
+)}
+
+{searched &&
+  !mandiLoading &&
+  !mandiError &&
+  filteredMandiData.length === 0 && (
+    <div className="no-result">
+      <strong>No verified mandi data found.</strong>
+      <p>
+        Try another crop, district, or state.
+      </p>
+    </div>
+  )}
           {filteredMandiData.map((mandi) => (
            <div
               className={`mandi-card ${
@@ -982,6 +1044,7 @@ return (
         <option>Rice</option>
         <option>Maize</option>
         <option>Potato</option>
+        <option>Chili Red</option>
       </select>
     </div>
 
@@ -1266,6 +1329,7 @@ return (
           <option>Araria</option>
           <option>Katihar</option>
           <option>Bhagalpur</option>
+          <option>Andhra Pradesh</option>
         </select>
 
       </div>
