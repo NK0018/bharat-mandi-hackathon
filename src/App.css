@@ -1814,3 +1814,25 @@ select option {
   }
 
 }
+.mandi-source-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f5f8f3;
+  font-size: 14px;
+  color: #52606d;
+}
+
+.mandi-source-info span {
+  font-weight: 500;
+}
+
+@media (max-width: 700px) {
+  .mandi-source-info {
+    flex-direction: column;
+    gap: 6px;
+  }
+}

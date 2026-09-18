@@ -16,9 +16,35 @@ const API_BASE_URL = 'https://api.data.gov.in/resource'
 const RESOURCE_ID = process.env.MANDI_RESOURCE_ID
 const API_KEY = process.env.DATA_GOV_API_KEY
 
+const mandiCache = new Map()
+
+const CACHE_DURATION = 5 * 60 * 1000
+
 app.get('/api/mandi', async (req, res) => {
   try {
     const { state, district, commodity } = req.query
+
+    const cacheKey = JSON.stringify({
+      state: state || '',
+      district: district || '',
+      commodity: commodity || '',
+    })
+
+    const cached = mandiCache.get(cacheKey)
+
+    if (
+      cached &&
+      Date.now() - cached.timestamp < CACHE_DURATION
+    ) {
+      console.log('CACHE HIT:', cacheKey)
+
+      return res.json({
+        success: true,
+        count: cached.records.length,
+        records: cached.records,
+        cached: true,
+      })
+    }
 
     const params = new URLSearchParams({
       'api-key': API_KEY,
@@ -38,24 +64,39 @@ app.get('/api/mandi', async (req, res) => {
       params.append('filters[commodity]', commodity)
     }
 
+    console.log('API REQUEST:', cacheKey)
+
     const response = await fetch(
       `${API_BASE_URL}/${RESOURCE_ID}?${params.toString()}`
     )
 
     if (!response.ok) {
-      throw new Error(`Data.gov.in error: ${response.status}`)
+      throw new Error(
+        `Data.gov.in error: ${response.status}`
+      )
     }
 
     const data = await response.json()
 
+    const records = data.records || []
+
+    mandiCache.set(cacheKey, {
+      timestamp: Date.now(),
+      records,
+    })
+
     res.json({
       success: true,
-      count: data.records?.length || 0,
-      records: data.records || [],
+      count: records.length,
+      records,
+      cached: false,
     })
 
   } catch (error) {
-    console.error('Mandi API Error:', error.message)
+    console.error(
+      'Mandi API Error:',
+      error.message
+    )
 
     res.status(500).json({
       success: false,

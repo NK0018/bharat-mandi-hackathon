@@ -157,18 +157,24 @@ const matchedVehicles = vehicles.filter(
       modal: 2300,
     },
   ]
-  const filteredMandiData = mandiRecords.map((record) => ({
-  id: `${record.market}-${record.commodity}-${record.arrival_date}`,
-  name: record.market,
-  location: `${record.district}, ${record.state}`,
-  crop: record.commodity,
-  min: Number(record.min_price),
-  max: Number(record.max_price),
-  modal: Number(record.modal_price),
-  arrivalDate: record.arrival_date,
-  variety: record.variety,
-  grade: record.grade,
-}))
+  const filteredMandiData = mandiRecords
+  .filter(
+    (record) =>
+      record.commodity?.trim().toLowerCase() ===
+      crop.trim().toLowerCase()
+  )
+  .map((record) => ({
+    id: `${record.market}-${record.commodity}-${record.arrival_date}-${record.modal_price}`,
+    name: record.market,
+    location: `${record.district}, ${record.state}`,
+    crop: record.commodity,
+    min: Number(record.min_price),
+    max: Number(record.max_price),
+    modal: Number(record.modal_price),
+    arrivalDate: record.arrival_date,
+    variety: record.variety,
+    grade: record.grade,
+  }))
 
 const highestPrice =
   filteredMandiData.length > 0
@@ -186,7 +192,19 @@ const lowestPrice =
 
 const priceDifference =
   highestPrice - lowestPrice
+  const comparisonMandi =
+    selectedMandi && filteredMandiData.length > 0
+      ? filteredMandiData
+          .filter(
+            (mandi) => mandi.name !== selectedMandi.name
+          )
+          .sort((a, b) => b.modal - a.modal)[0] || null
+      : null
 
+  const selectedMandiSpread =
+    selectedMandi && comparisonMandi
+      ? comparisonMandi.modal - selectedMandi.modal
+      : 0
 const calculateProfit = () => {
   if (!selectedMandi) {
     alert('Pehle ek mandi select karein.')
@@ -756,15 +774,39 @@ return (
         {searched && filteredMandiData.length > 1 && (
           <div className="price-difference">
             💰 Price Difference: ₹{priceDifference}
-          </div>
+            </div>
         )}
-        {selectedMandi && (
-          <div className="selected-mandi">
-            📊 You selected: <strong>{selectedMandi.name}</strong>
-            <br />
-            💰 Modal Price: <strong>₹{selectedMandi.modal}</strong>
-          </div>
-        )}
+          {selectedMandi && (
+  <div className="selected-mandi">
+    <h3>📊 Mandi Comparison</h3>
+
+    <div className="comparison-item">
+      <span>Selected Mandi</span>
+      <strong>{selectedMandi.name}</strong>
+    </div>
+
+    <div className="comparison-item">
+      <span>💰 Selected Modal Price</span>
+      <strong>₹{selectedMandi.modal}</strong>
+    </div>
+
+    {comparisonMandi && (
+      <>
+        <div className="comparison-item">
+          <span>🏆 Highest Modal Price</span>
+          <strong>
+            {comparisonMandi.name} — ₹{comparisonMandi.modal}
+          </strong>
+        </div>
+
+        <div className="comparison-spread">
+          <span>💰 Price Spread</span>
+          <strong>₹{selectedMandiSpread}</strong>
+        </div>
+      </>
+    )}
+  </div>
+)}
         {/* Mandi Cards */}
         <div className="mandi-grid">
         
@@ -834,6 +876,15 @@ return (
                   <strong>₹{mandi.max}</strong>
                 </div>
 
+              </div>
+              <div className="mandi-source-info">
+                <span>
+                  📅 Data Date: {mandi.arrivalDate}
+                </span>
+
+                <span>
+                  🏛️ Source: Agmarknet / Data.gov.in
+                </span>
               </div>
 
               <button
