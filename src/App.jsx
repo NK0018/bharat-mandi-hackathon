@@ -1,3 +1,4 @@
+import { fetchMandiPrices } from './services/mandiApi'
 import { useEffect, useState } from 'react'
 import './App.css'
 
@@ -13,6 +14,19 @@ function App() {
   const [quantity, setQuantity] = useState(100)
   const [freight, setFreight] = useState(500)
   const [profit, setProfit] = useState(null)
+ useEffect(() => {
+  async function testMandiApi() {
+    try {
+      const records = await fetchMandiPrices({})
+
+      console.log('REAL MANDI DATA:', records)
+    } catch (error) {
+      console.error('MANDI API ERROR:', error)
+    }
+  }
+
+  testMandiApi()
+}, [])
   
 // =========================================
 // SAJHA GADI STATES
