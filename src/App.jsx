@@ -163,18 +163,50 @@ const matchedVehicles = vehicles.filter(
       record.commodity?.trim().toLowerCase() ===
       crop.trim().toLowerCase()
   )
-  .map((record) => ({
-    id: `${record.market}-${record.commodity}-${record.arrival_date}-${record.modal_price}`,
-    name: record.market,
-    location: `${record.district}, ${record.state}`,
-    crop: record.commodity,
-    min: Number(record.min_price),
-    max: Number(record.max_price),
-    modal: Number(record.modal_price),
-    arrivalDate: record.arrival_date,
-    variety: record.variety,
-    grade: record.grade,
-  }))
+  .reduce((markets, record) => {
+    const existingMarket = markets.find(
+      (mandi) => mandi.name === record.market
+    )
+
+    const minPrice = Number(record.min_price)
+    const maxPrice = Number(record.max_price)
+    const modalPrice = Number(record.modal_price)
+
+    if (existingMarket) {
+      existingMarket.min = Math.min(
+        existingMarket.min,
+        minPrice
+      )
+
+      existingMarket.max = Math.max(
+        existingMarket.max,
+        maxPrice
+      )
+
+      existingMarket.modal = Math.max(
+        existingMarket.modal,
+        modalPrice
+      )
+
+      existingMarket.records += 1
+    } else {
+      markets.push({
+        id: `${record.market}-${record.district}-${record.state}`,
+        name: record.market,
+        location: `${record.district}, ${record.state}`,
+        crop: record.commodity,
+        min: minPrice,
+        max: maxPrice,
+        modal: modalPrice,
+        arrivalDate: record.arrival_date,
+        variety: record.variety,
+        grade: record.grade,
+        records: 1,
+      })
+    }
+
+    return markets
+  }, [])
 
 const highestPrice =
   filteredMandiData.length > 0
