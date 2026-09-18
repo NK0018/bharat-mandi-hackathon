@@ -57,6 +57,18 @@ const [vehicles, setVehicles] = useState([
     pickup: 'Purnia',
     destination: 'Katihar',
   },
+  {
+  id: 4,
+  driver: 'Kisan Shared Transport',
+  route: 'Purnia → Gulabbagh',
+  capacity: 50,
+  available: 30,
+  freight: 900,
+  status: 'Available',
+  pickup: 'Purnia',
+  destination: 'Gulabbagh',
+  crop: 'Wheat',
+  },
 ])
 
 const [requestedVehicle, setRequestedVehicle] = useState(null)
@@ -319,11 +331,71 @@ const recommendedRoute =
 // =========================================
 // PARTIAL SMART TRANSPORT MATCHING
 // =========================================
-
+const smartTransportVehicles = [
+  {
+    id: 'smart-1',
+    driver: 'Local Transport',
+    route: 'Purnia → Gulabbagh',
+    capacity: 40,
+    available: 20,
+    freight: 800,
+    status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Gulabbagh',
+    crop: 'Wheat',
+  },
+  {
+    id: 'smart-2',
+    driver: 'Kisan Transport',
+    route: 'Purnia → Araria',
+    capacity: 50,
+    available: 30,
+    freight: 1000,
+    status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Araria',
+    crop: 'Wheat',
+  },
+  {
+    id: 'smart-3',
+    driver: 'Bihar Agro Transport',
+    route: 'Purnia → Katihar',
+    capacity: 60,
+    available: 35,
+    freight: 1200,
+    status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Katihar',
+    crop: 'Wheat',
+  },
+  {
+    id: 'smart-4',
+    driver: 'Kisan Shared Transport',
+    route: 'Purnia → Gulabbagh',
+    capacity: 50,
+    available: 30,
+    freight: 900,
+    status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Gulabbagh',
+    crop: 'Wheat',
+  },
+  {
+    id: 'smart-5',
+    driver: 'Bihar Kisan Logistics',
+    route: 'Purnia → Gulabbagh',
+    capacity: 60,
+    available: 50,
+    freight: 1200,
+    status: 'Available',
+    pickup: 'Purnia',
+    destination: 'Gulabbagh',
+    crop: 'Wheat',
+  },
+]
 const smartTransportMatches = recommendedRoute
-  ? vehicles
+  ? smartTransportVehicles
       .filter((vehicle) => {
-
         const vehicleDestination =
           String(vehicle.destination || '').trim()
 
@@ -337,26 +409,9 @@ const smartTransportMatches = recommendedRoute
           !vehicle.crop ||
           vehicle.crop === dashboardCrop
 
-        const availableQuantity =
-          Number(vehicle.available || 0)
-
-        const spaceAvailable =
-          availableQuantity > 0
-
-        const alreadySelected =
-          joinedVehicle === vehicle.id
-
-        return (
-          routeMatches &&
-          cropMatches &&
-          (
-            spaceAvailable ||
-            alreadySelected
-          )
-        )
+        return routeMatches && cropMatches
       })
       .map((vehicle) => {
-
         const requiredQuantity =
           Number(dashboardQuantity || 0)
 
@@ -364,20 +419,13 @@ const smartTransportMatches = recommendedRoute
           Number(vehicle.available || 0)
 
         const coveredQuantity =
-          Math.min(
-            requiredQuantity,
-            availableQuantity
-          )
-
-        const remainingQuantity =
           Math.max(
-            requiredQuantity -
-            coveredQuantity,
+            Math.min(
+              availableQuantity,
+              requiredQuantity
+            ),
             0
           )
-
-        const isFullMatch =
-          availableQuantity >= requiredQuantity
 
         const vehicleCapacity =
           Number(vehicle.capacity || 1)
@@ -393,21 +441,106 @@ const smartTransportMatches = recommendedRoute
 
         return {
           ...vehicle,
-
           requiredQuantity,
           coveredQuantity,
-          remainingQuantity,
-          isFullMatch,
+          remainingQuantity:
+            Math.max(
+              requiredQuantity -
+              coveredQuantity,
+              0
+            ),
+          isFullMatch:
+            availableQuantity >= requiredQuantity,
           estimatedShare,
         }
       })
-      .sort(
-        (a, b) =>
-          Number(b.isFullMatch) -
-          Number(a.isFullMatch)
-      )
   : []
   // =========================================
+// MULTI-VEHICLE TRANSPORT PLAN
+// =========================================
+
+const multiVehicleTransportPlan = recommendedRoute
+  ? (() => {
+      const requiredQuantity =
+        Number(dashboardQuantity || 0)
+
+      let remainingQuantity = requiredQuantity
+
+      const selectedVehicles = []
+
+      for (const vehicle of smartTransportMatches) {
+        if (remainingQuantity <= 0) {
+          break
+        }
+
+        const availableQuantity =
+          Number(vehicle.available || 0)
+
+        const coveredQuantity =
+          Math.min(
+            availableQuantity,
+            remainingQuantity
+          )
+
+        if (coveredQuantity <= 0) {
+          continue
+        }
+
+        const vehicleCapacity =
+          Number(vehicle.capacity || 1)
+
+        const freightShare =
+          Math.round(
+            (
+              Number(vehicle.freight || 0) *
+              coveredQuantity
+            ) /
+            vehicleCapacity
+          )
+
+        selectedVehicles.push({
+          ...vehicle,
+          planCoveredQuantity: coveredQuantity,
+          planFreightShare: freightShare,
+        })
+
+        remainingQuantity -= coveredQuantity
+      }
+
+      const totalCoveredQuantity =
+        selectedVehicles.reduce(
+          (total, vehicle) =>
+            total + vehicle.planCoveredQuantity,
+          0
+        )
+
+      const totalFreight =
+        selectedVehicles.reduce(
+          (total, vehicle) =>
+            total + vehicle.planFreightShare,
+          0
+        )
+
+      return {
+        requiredQuantity,
+        totalCoveredQuantity,
+        remainingQuantity,
+        totalFreight,
+        selectedVehicles,
+        fullyCovered:
+          remainingQuantity === 0 &&
+          totalCoveredQuantity > 0,
+      }
+    })()
+  : {
+      requiredQuantity: 0,
+      totalCoveredQuantity: 0,
+      remainingQuantity: 0,
+      totalFreight: 0,
+      selectedVehicles: [],
+      fullyCovered: false,
+    }
+// =========================================
 // FINAL FARMER DECISION
 // =========================================
 
@@ -1363,8 +1496,8 @@ return (
         </h2>
 
         <p>
-          Recommended mandi ke route par available
-          shared vehicles check karein.
+          Multiple vehicles ko combine karke
+          transport requirement cover karein.
         </p>
       </div>
 
@@ -1374,10 +1507,10 @@ return (
 
     </div>
 
-
-    {smartTransportMatches.length === 0 ? (
+    {multiVehicleTransportPlan.selectedVehicles.length === 0 ? (
 
       <div className="no-smart-transport">
+
         <div className="no-smart-transport-icon">
           🚫
         </div>
@@ -1388,218 +1521,172 @@ return (
           </h3>
 
           <p>
-            Is mandi ke liye abhi required quantity ke
-            according suitable shared vehicle available nahi hai.
+            Is mandi ke route par abhi shared
+            transport available nahi hai.
           </p>
         </div>
+
       </div>
 
     ) : (
 
-      <div className="smart-transport-grid">
+      <div className="multi-transport-plan">
 
-        {smartTransportMatches.map((vehicle) => (
-  <div
-    className={`smart-transport-card ${
-      vehicle.isFullMatch
-        ? 'full-transport-match'
-        : 'partial-transport-match'
-    }`}
-    key={vehicle.id}
-  >
+        <div className="multi-plan-summary">
 
-    {/* VEHICLE HEADER */}
-    <div className="smart-transport-card-header">
+          <div>
+            <small>Required Quantity</small>
+            <strong>
+              {multiVehicleTransportPlan.requiredQuantity} Q
+            </strong>
+          </div>
 
-      <div>
-        <h3>{vehicle.driver}</h3>
+          <div>
+            <small>Total Covered</small>
+            <strong>
+              {multiVehicleTransportPlan.totalCoveredQuantity} Q
+            </strong>
+          </div>
 
-        <p>
-          🚚 {vehicle.route}
-        </p>
-      </div>
+          <div>
+            <small>Remaining</small>
+            <strong>
+              {multiVehicleTransportPlan.remainingQuantity} Q
+            </strong>
+          </div>
 
-      <span
-        className={`transport-status ${
-          vehicle.isFullMatch ? 'full' : 'partial'
-        }`}
-      >
-        {vehicle.isFullMatch
-          ? '✓ Full Match'
-          : '⚠ Partial Match'}
-      </span>
+          <div>
+            <small>Total Freight Share</small>
+            <strong>
+              ₹{multiVehicleTransportPlan.totalFreight}
+            </strong>
+          </div>
 
-    </div>
+        </div>
 
+        <div className="multi-plan-status">
 
-    {/* MATCH DETAILS */}
-    <div className="smart-transport-details">
+          {multiVehicleTransportPlan.fullyCovered
+            ? '✓ Full Transport Coverage'
+            : '⚠ Partial Transport Coverage'}
 
-      <div>
-        <small>Required Quantity</small>
+        </div>
 
-        <strong>
-          {vehicle.requiredQuantity} Q
-        </strong>
-      </div>
+        <h3 className="multi-plan-title">
+          🤝 Combined Transport Plan
+        </h3>
 
+        <div className="multi-plan-vehicles">
 
-      <div>
-        <small>Covered Quantity</small>
+          {multiVehicleTransportPlan.selectedVehicles.map(
+            (vehicle) => (
+              <div
+                className="multi-plan-vehicle"
+                key={vehicle.id}
+              >
 
-        <strong>
-          {vehicle.coveredQuantity} Q
-        </strong>
-      </div>
+                <div>
+                  <strong>
+                    🚚 {vehicle.driver}
+                  </strong>
 
+                  <p>
+                    {vehicle.route}
+                  </p>
+                </div>
 
-      <div>
-        <small>Available Space</small>
+                <div className="multi-plan-quantity">
 
-        <strong>
-          {vehicle.available} Q
-        </strong>
-      </div>
+                  <span>
+                    Covered
+                  </span>
 
+                  <strong>
+                    {vehicle.planCoveredQuantity} Q
+                  </strong>
 
-      <div>
-        <small>Vehicle Freight</small>
+                </div>
 
-        <strong>
-          ₹{vehicle.freight}
-        </strong>
-      </div>
+                <div className="multi-plan-freight">
 
-    </div>
+                  <span>
+                    Freight Share
+                  </span>
 
+                  <strong>
+                    ₹{vehicle.planFreightShare}
+                  </strong>
 
-    {/* FULL / PARTIAL RESULT */}
-    <div
-      className={`transport-match-result ${
-        vehicle.isFullMatch
-          ? 'full-result'
-          : 'partial-result'
-      }`}
-    >
+                </div>
 
-      <div>
-        <small>Covered</small>
+              </div>
+            )
+          )}
 
-        <strong>
-          {vehicle.coveredQuantity} Q
-        </strong>
-      </div>
+        </div>
 
+        {multiVehicleTransportPlan.remainingQuantity > 0 && (
+          <div className="partial-warning">
 
-      <div>
-        <small>Remaining</small>
+            ⚠️
 
-        <strong>
-          {vehicle.remainingQuantity} Q
-        </strong>
-      </div>
+            <p>
+              <strong>
+                {multiVehicleTransportPlan.remainingQuantity} Q
+              </strong>{' '}
+              quantity ke liye additional transport
+              arrange karna hoga.
+            </p>
 
+          </div>
+        )}
 
-      <div>
-        <small>Estimated Freight Share</small>
+        <button
+          className="smart-join-btn"
+          onClick={() => {
 
-        <strong>
-          ₹{vehicle.estimatedShare}
-        </strong>
-      </div>
+            const totalCovered =
+              multiVehicleTransportPlan.totalCoveredQuantity
 
-    </div>
+            const totalFreight =
+              multiVehicleTransportPlan.totalFreight
 
+            if (totalCovered <= 0) {
+              alert(
+                'Abhi koi usable transport space available nahi hai.'
+              )
+              return
+            }
 
-    {/* PARTIAL WARNING */}
-    {!vehicle.isFullMatch && (
-      <div className="partial-warning">
+            setPickup('Purnia')
+            setDestination(recommendedRoute)
+            setLoadCrop(dashboardCrop)
+            setLoadQuantity(totalCovered)
 
-        <span>⚠️ Partial Transport Match</span>
+            setJoinedVehicle('multi-transport')
 
-        <p>
-          Is vehicle me abhi{' '}
-          <strong>
-            {vehicle.coveredQuantity} Q
-          </strong>{' '}
-          space available hai.
-          Aapki{' '}
-          <strong>
-            {vehicle.remainingQuantity} Q
-          </strong>{' '}
-          quantity ke liye additional transport
-          arrange karna hoga.
-        </p>
+            setSharedFreight({
+              vehicleId: 'multi-transport',
+              quantity: totalCovered,
+              totalFreight: totalFreight,
+              farmerShare: totalFreight,
+              remainingSpace:
+                multiVehicleTransportPlan.remainingQuantity,
+            })
 
-      </div>
-    )}
+            alert(
+              multiVehicleTransportPlan.fullyCovered
+                ? `Full Transport Plan Selected! ${totalCovered} Q covered. Total freight share ₹${totalFreight}.`
+                : `Partial Transport Plan Selected! ${totalCovered} Q covered. ${multiVehicleTransportPlan.remainingQuantity} Q transport pending.`
+            )
+          }}
+        >
 
+          {joinedVehicle === 'multi-transport'
+            ? '✓ Transport Plan Selected'
+            : '🤝 Use Combined Transport Plan'}
 
-    {/* ROUTE + CROP MATCH */}
-    <div className="smart-transport-match">
-
-      <span>✓ Route Match</span>
-
-      <span>✓ Crop Match</span>
-
-      {vehicle.isFullMatch ? (
-        <span>✓ Capacity Match</span>
-      ) : (
-        <span>⚠ Partial Capacity</span>
-      )}
-
-    </div>
-
-
-    {/* ACTION BUTTON */}
-   <button
-      className="smart-join-btn"
-      onClick={() => {
-        const usedQuantity =
-          Number(vehicle.coveredQuantity)
-
-        const freightShare =
-          Number(vehicle.estimatedShare)
-
-        if (usedQuantity <= 0) {
-          alert(
-            'Is vehicle me abhi usable space available nahi hai.'
-          )
-          return
-        }
-
-        setPickup(vehicle.pickup)
-        setDestination(vehicle.destination)
-        setLoadCrop(dashboardCrop)
-        setLoadQuantity(usedQuantity)
-
-        setJoinedVehicle(vehicle.id)
-
-        setSharedFreight({
-          vehicleId: vehicle.id,
-          quantity: usedQuantity,
-          totalFreight: vehicle.freight,
-          farmerShare: freightShare,
-          remainingSpace:
-            Number(vehicle.available) -
-            usedQuantity,
-        })
-
-        alert(
-          vehicle.isFullMatch
-            ? `Full Match! ${usedQuantity} Q transport selected. Estimated freight share ₹${freightShare}.`
-            : `Partial Match! ${usedQuantity} Q transport selected. Remaining ${vehicle.remainingQuantity} Q ke liye additional transport required hai.`
-        )
-      }}
-    >
-      {joinedVehicle === vehicle.id
-        ? '✓ Transport Selected'
-        : '🤝 Use Available Space'}
-    </button>
-
-
-  </div>
-))}
+        </button>
 
       </div>
 
