@@ -1,4 +1,7 @@
-import { fetchMandiPrices } from './services/mandiApi'
+import {
+  fetchMandiPrices,
+  fetchMandiComparison,
+} from './services/mandiApi'
 import { useEffect, useState } from 'react'
 import './App.css'
 
@@ -224,14 +227,16 @@ const lowestPrice =
 
 const priceDifference =
   highestPrice - lowestPrice
-  const comparisonMandi =
+  const comparisonMandis =
     selectedMandi && filteredMandiData.length > 0
       ? filteredMandiData
           .filter(
             (mandi) => mandi.name !== selectedMandi.name
           )
-          .sort((a, b) => b.modal - a.modal)[0] || null
-      : null
+          .sort((a, b) => b.modal - a.modal)
+      : []
+
+  const comparisonMandi = comparisonMandis[0] || null
 
   const selectedMandiSpread =
     selectedMandi && comparisonMandi
@@ -255,6 +260,8 @@ const calculateProfit = () => {
   })
 }
 const handleMandiSearch = async () => {
+  setSelectedMandi(null)
+  setComparisonRecords([])
   setMandiLoading(true)
   setMandiError('')
 
@@ -808,34 +815,61 @@ return (
             💰 Price Difference: ₹{priceDifference}
             </div>
         )}
-          {selectedMandi && (
+        {selectedMandi && (
   <div className="selected-mandi">
     <h3>📊 Mandi Comparison</h3>
 
     <div className="comparison-item">
-      <span>Selected Mandi</span>
+      <span>📍 Selected Mandi</span>
       <strong>{selectedMandi.name}</strong>
     </div>
 
     <div className="comparison-item">
       <span>💰 Selected Modal Price</span>
-      <strong>₹{selectedMandi.modal}</strong>
+      <strong>₹{selectedMandi.modal}/Q</strong>
     </div>
 
-    {comparisonMandi && (
+    {comparisonMandi ? (
       <>
         <div className="comparison-item">
-          <span>🏆 Highest Modal Price</span>
-          <strong>
-            {comparisonMandi.name} — ₹{comparisonMandi.modal}
-          </strong>
+          <span>🏆 Alternative Mandi</span>
+          <strong>{comparisonMandi.name}</strong>
+        </div>
+
+        <div className="comparison-item">
+          <span>💰 Alternative Modal Price</span>
+          <strong>₹{comparisonMandi.modal}/Q</strong>
         </div>
 
         <div className="comparison-spread">
-          <span>💰 Price Spread</span>
-          <strong>₹{selectedMandiSpread}</strong>
+          <span>📈 Price Difference</span>
+          <strong>
+            ₹{Math.abs(comparisonMandi.modal - selectedMandi.modal)}/Q
+          </strong>
+        </div>
+
+        <div className="comparison-item">
+          <span>📦 Your Quantity</span>
+          <strong>{quantity} Q</strong>
+        </div>
+
+        <div className="comparison-spread">
+          <span>💵 Potential Extra Sale Value</span>
+          <strong>
+            ₹
+            {Math.abs(
+              comparisonMandi.modal - selectedMandi.modal
+            ) * Number(quantity)}
+          </strong>
         </div>
       </>
+    ) : (
+      <div className="comparison-item">
+        <span>ℹ️ Comparison</span>
+        <strong>
+          No other mandi available for comparison
+        </strong>
+      </div>
     )}
   </div>
 )}

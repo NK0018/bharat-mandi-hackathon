@@ -56,13 +56,6 @@ app.get('/api/mandi', async (req, res) => {
       params.append('filters[state.keyword]', state)
     }
 
-    if (district) {
-      params.append('filters[district]', district)
-    }
-
-    if (commodity) {
-      params.append('filters[commodity]', commodity)
-    }
 
     console.log('API REQUEST:', cacheKey)
 
@@ -78,7 +71,19 @@ app.get('/api/mandi', async (req, res) => {
 
     const data = await response.json()
 
-    const records = data.records || []
+const records = (data.records || []).filter((record) => {
+  const matchesDistrict =
+    !district ||
+    record.district?.trim().toLowerCase() ===
+      district.trim().toLowerCase()
+
+  const matchesCommodity =
+    !commodity ||
+    record.commodity?.trim().toLowerCase() ===
+      commodity.trim().toLowerCase()
+
+  return matchesDistrict && matchesCommodity
+})
 
     mandiCache.set(cacheKey, {
       timestamp: Date.now(),
@@ -104,7 +109,114 @@ app.get('/api/mandi', async (req, res) => {
     })
   }
 })
+// =====================================
+// Mandi Comparison API
+// =====================================
 
+const comparisonCache = new Map()
+
+const COMPARISON_CACHE_DURATION = 5 * 60 * 1000
+
+app.get('/api/mandi/compare', async (req, res) => {
+  try {
+    const { state, commodity } = req.query
+
+    if (!state || !commodity) {
+      return res.status(400).json({
+        success: false,
+        error: 'State and commodity are required',
+      })
+    }
+
+    const cacheKey = JSON.stringify({
+      state,
+      commodity,
+    })
+
+    const cached = comparisonCache.get(cacheKey)
+
+    if (
+      cached &&
+      Date.now() - cached.timestamp < COMPARISON_CACHE_DURATION
+    ) {
+      console.log(
+        'COMPARISON CACHE HIT:',
+        cacheKey
+      )
+
+      return res.json({
+        success: true,
+        count: cached.records.length,
+        records: cached.records,
+        cached: true,
+      })
+    }
+
+    const params = new URLSearchParams({
+      'api-key': API_KEY,
+      format: 'json',
+      limit: '100',
+    })
+
+    params.append(
+      'filters[state.keyword]',
+      state
+    )
+
+    params.append(
+      'filters[commodity]',
+      commodity
+    )
+
+    console.log(
+      'COMPARISON API REQUEST:',
+      cacheKey
+    )
+
+    const response = await fetch(
+      `${API_BASE_URL}/${RESOURCE_ID}?${params.toString()}`
+    )
+
+    if (!response.ok) {
+      throw new Error(
+        `Data.gov.in comparison error: ${response.status}`
+      )
+    }
+
+    const data = await response.json()
+
+    // Data.gov.in kabhi-kabhi unrelated records return
+    // kar sakta hai, isliye exact commodity filter.
+    const records = (data.records || []).filter(
+      (record) =>
+        record.commodity?.trim().toLowerCase() ===
+        commodity.trim().toLowerCase()
+    )
+
+    comparisonCache.set(cacheKey, {
+      timestamp: Date.now(),
+      records,
+    })
+
+    res.json({
+      success: true,
+      count: records.length,
+      records,
+      cached: false,
+    })
+
+  } catch (error) {
+    console.error(
+      'Mandi Comparison Error:',
+      error.message
+    )
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    })
+  }
+})
 const server = app.listen(PORT, '127.0.0.1', () => {
   console.log(
     `Bharat Mandi backend running on http://localhost:${PORT}`
